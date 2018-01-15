@@ -1,7 +1,7 @@
 Package: transgeneR
 Type: Package
 Title: A tool for transgenic integration sites discovery
-Version: 0.99.1
+Version: 0.99.0
 Author: Guofeng Meng
 Maintainer: Guofeng Meng <menggf@gmail.com>
 Description: This a a package designed for trangenic integration and rearrangement site discovery using sequencing data
