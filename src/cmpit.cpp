@@ -94,6 +94,7 @@ int maxfreq(vector <int> x){
 	return wh_max;
 }
 
+
 // [[Rcpp::export]]
 Rcpp::List clustercpp(Rcpp::IntegerVector arr){
   const int n=arr.size() -1 ;

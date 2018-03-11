@@ -261,7 +261,7 @@ transgene.discovery<-function(output.dir, genome.ref, homozygote= FALSE, mate1=N
     new.sites=sites;
 
     if(calculate.nonsplit.reads){
-        print("Finding the non-split reads...")
+        print("Finding the non-split reads... ")
         ipt=paste("my $dir=\"", output.dir,"\";",sep="")
         cmd=paste(
           ipt,

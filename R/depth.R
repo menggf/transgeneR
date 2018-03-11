@@ -44,7 +44,7 @@
 	split=fread(split.file, header=TRUE,sep="\t")
 	nonsplit=fread(nonsplit.file, header=F,sep="\t")
 	names(nonsplit) <- c("tag","from","to")
-  nonsplit$chr<- "insert"
+    nonsplit$chr<- "insert"
 	#names(left)=c("tag","id","chr","from","to")
 	temp=both[,c("chr1","from","to")]
 	names(temp)<-c("chr","from","to")

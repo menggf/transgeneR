@@ -35,7 +35,7 @@
 	  }
 
 	  if(gap<0)
-	  	gap=0;
+	  	    gap=0;
 	  dd=as.vector(sub.region$direction);
 	  c1=as.vector(sub.region$chr1);
 	  f1=as.vector(sub.region$from1);

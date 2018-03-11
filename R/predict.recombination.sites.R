@@ -39,7 +39,7 @@
 		score=vector();
 		reads=vector();
 		bal=vector();
-     bal2=vector();
+        bal2=vector();
 		cross=vector();
 		for(cc in unique(cl)){
 			wtag=cl==cc;
