@@ -1,0 +1,247 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={TransgeneR: A tool for transgenic integration and recombination sites discovery},
+            pdfauthor={Guofeng Meng},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{{#1}}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{{#1}}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{{#1}}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{{#1}}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{{#1}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{{#1}}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{{#1}}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{{#1}}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{{#1}}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{{#1}}}
+\newcommand{\ImportTok}[1]{{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{{#1}}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{{#1}}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{{#1}}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{{#1}}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{{#1}}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{{#1}}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{{#1}}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{{#1}}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{{#1}}}}
+\newcommand{\BuiltInTok}[1]{{#1}}
+\newcommand{\ExtensionTok}[1]{{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{{#1}}}
+\newcommand{\RegionMarkerTok}[1]{{#1}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{{#1}}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{{#1}}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{{#1}}}}
+\newcommand{\NormalTok}[1]{{#1}}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+  \title{TransgeneR: A tool for transgenic integration and recombination sites
+discovery}
+  \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \author{Guofeng Meng}
+  \preauthor{\centering\large\emph}
+  \postauthor{\par}
+  \predate{\centering\large\emph}
+  \postdate{\par}
+  \date{2018-03-20}
+
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\subsection{Introduction}\label{introduction}
+
+TransgeneR is designed to find the transgenic integration information in
+the animal genome using the whole genome sequencing data or PCR-based
+sequencing data. In many case, the transgenic sequences can have
+multiple integration sites and even recombination between transgenic
+sequences. Therefore, transgeneR is supposed to answer following
+question: * where are the transgenic sequences integrated on the genome?
+* Is there transgenic recombination? * How many transgenic sequences are
+integrated on the genome?
+
+To use transgeneR:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(devtools)}
+\KeywordTok{install_github}\NormalTok{(}\StringTok{"menggf/transgeneR"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Please note that ``bowtie2'' should be installed in the users'
+computers. And the bowtie2 geneome reference has been built the studied
+animals before using transgeneR.
+
+\subsection{usage}\label{usage}
+
+TransgeneR is an one-stop analysis pipeline.
+
+The output of transgeneR are stored in a directory set by
+``output.dir''.
+
+To do the whole analysis, it has following steps:
+
+\begin{itemize}
+\item
+  Build the bowtie2 reference for transgenic sequence. The output is
+  store in a directory ``insert\_ref/'';
+\item
+  Map the homologous regions of transgenic sequences in genome. Output
+  is a file ``homo.txt'';
+\item
+  Reads local alignment to both genome and transgenic sequences: in this
+  step, users need to pre-install bowtie2 and build the genome reference
+  of studied animals. This step will generate two file: aln\_genome.sam
+  and aln\_insert.sam.
+\item
+  Assign the reads to genome, transgenic sequence or both and collect
+  the clipping parts of read for second-round alignments. The output
+  will be store in a dictory ``temp\_files/'';
+\item
+  Second-round alignments. The output are stored as
+  ``temp\_files/fragment\_genome.sam'' and
+  ``temp\_files/fragment\_insert.sam'';
+\item
+  Connect the break sites in either transgenic sequence, genome or
+  between transgenic sequence and genome;
+\item
+  Make the plot for the split reads in the integration sites. Figures
+  are created in ``sites/*.pdf``;
+\item
+  If whole genome sequencing data are used, it can estimated both the
+  full and imcomplete integration; and calculate their copy numbers. One
+  figure is drawn as ``plot\_fragment.pdf''
+\end{itemize}
+
+In same case that users wish to re-run part of the analysis, user can
+just delete the output in mentioned steps and this will make it to skip
+the steps with outputs.
+
+\subsection{Output}\label{output}
+
+The output are files located in ``output.dir''. They have a structure
+of: output.dir:/
+
+\begin{itemize}
+\item
+  aln\_genome.sam (or aln\_genome.sam.gz)
+\item
+  aln\_insert.sam (or aln\_insert.sam.gz)
+\item
+  assign.txt : read assignment in genome and transgenic sequence
+\item
+  homo.txt : homologous annotation of transgeneic sequence
+\item
+  mapping\_summary.txt : reads alignment information
+\item
+  report.txt : the predicted results
+\item
+  warning.txt : the warning information
+\item
+  plot\_fragment.pdf the copy information of transgenic sequence
+\item
+  insert\_ref/ : the bowtie2 reference for transgenic sequence
+\item
+  temp\_files/: some temparory files
+\item
+  sites/: the transgenic integration or recombination information
+\item
+  \begin{itemize}
+  \tightlist
+  \item
+    site1.pdf: the plot for first site
+  \end{itemize}
+\item
+  \begin{itemize}
+  \tightlist
+  \item
+    site2.pdf: the plot for second site
+  \end{itemize}
+\end{itemize}
+
+
+\end{document}
