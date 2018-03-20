@@ -37,16 +37,25 @@
 #' temp <- tempdir()
 #' unzip(test.data, exdir=temp)
 #' output.dir=paste(temp,"/test",sep="")
-#' fragment.estimation(output.dir)
+#' fragment.estimation(output.dir, chr="chr1")
 #' @export
 
 fragment.estimation<-function(output.dir, min.counts=0, seq.depth=NULL,  chr="chr1", homozygote= FALSE, plot.width=10, plot.height=7){
 	if(is.null(seq.depth)){
 		chr.file=paste(output.dir,"/temp_files/read_nonsplit_", chr,".txt",sep="");
-		leftchr=fread(chr.file,sep="\t", showProgress=FALSE);
-		x=GRanges(seqnames=Rle("chr"),
-			 	ranges = IRanges(start=as.vector(leftchr$V2), end=as.vector(leftchr$V3)),
-			 	strand=Rle("+"))
+		if(!file.exists(chr.file)){
+		  chr.file=paste(output.dir,"/temp_files/read_nonsplit.txt",sep="");
+		  leftchr=fread(chr.file, sep="\t", showProgress=FALSE);
+		  x=GRanges(seqnames=Rle("chr"),
+		            ranges = IRanges(start=as.vector(as.matrix(leftchr[,5])), end=as.vector(as.matrix(leftchr[,6]))),
+		            strand=Rle("+"))
+		}else{
+		  leftchr=fread(chr.file, sep="\t", showProgress=FALSE);
+		  x=GRanges(seqnames=Rle("chr"),
+		            ranges = IRanges(start=as.vector(as.matrix(leftchr[,2])), end=as.vector(as.matrix(leftchr[,3]))),
+		            strand=Rle("+"))
+
+		}
 		rm(leftchr);
 		chrcv=coverage(x);
 		rm(x);
@@ -58,7 +67,7 @@ fragment.estimation<-function(output.dir, min.counts=0, seq.depth=NULL,  chr="ch
 		print(paste("Estimated sequence depth is:",round(seq.depth, digits=1) ,sep=" "))
 		leftchr1=1;leftchr=1;x=1;chrwin=1;
 	}
-	
+
 	insert.file=paste(output.dir,"/temp_files/insert.fa",sep="");
     sq=read.fasta(insert.file, as.string = TRUE, forceDNAtolower = FALSE, seqonly = TRUE)[[1]];
     n.seq=nchar(sq)
@@ -66,14 +75,17 @@ fragment.estimation<-function(output.dir, min.counts=0, seq.depth=NULL,  chr="ch
 	range.file=paste(output.dir,"/temp_files/range_split.txt",sep="");
 	both.file=paste(output.dir,"/temp_files/read_both.txt",sep="");
 	nonsplit.file=paste(output.dir,"/temp_files/read_nonsplit_insert.txt",sep="");
+	if(!file.exists(nonsplit.file)){
+	  nonsplit.file=paste(output.dir,"/temp_files/read_nonsplit.txt",sep="")
+	}
 	split.file=paste(output.dir,"/temp_files/read_split.txt",sep="");
 	#left=fread(left.file, header=FALSE,sep="\t")
 	both=fread(both.file, header=TRUE,sep="\t")
 	rang=fread(range.file, header=TRUE,sep="\t")
 	split=fread(split.file, header=TRUE,sep="\t")
-	nonsplit=fread(nonsplit.file, header=F,sep="\t")
+	nonsplit=fread(nonsplit.file,sep="\t")
 	names(nonsplit) <- c("tag","from","to")
-    nonsplit$chr<- "insert"
+  nonsplit$chr<- "insert"
 	#names(left)=c("tag","id","chr","from","to")
 	temp=both[,c("chr1","from","to")]
 	names(temp)<-c("chr","from","to")
@@ -85,7 +97,7 @@ fragment.estimation<-function(output.dir, min.counts=0, seq.depth=NULL,  chr="ch
 	names(temp2)<-c("chr","from","to")
 	names(temp3)<-c("chr","from","to")
 	names(temp4)<-c("chr","from","to")
-          
+
 	tmp1=rang[,c("chr1","from1","to1")]
 	tmp2=rang[,c("chr2","from2","to2")];
 	names(tmp1)<-c("chr","from","to")
@@ -93,7 +105,7 @@ fragment.estimation<-function(output.dir, min.counts=0, seq.depth=NULL,  chr="ch
 	input=unique(rbind( nonsplit[,c("chr","from","to")], temp1,temp2,temp3,temp4,temp,tmp1,tmp2))
 	rm(temp1, temp2, temp3, temp4, tmp1, tmp2, both, split, nonsplit );
 	new.input=input[input$to > input$from & input$chr=="insert",]
-	x1=GRanges(seqnames=Rle("insert"), 
+	x1=GRanges(seqnames=Rle("insert"),
   		ranges = IRanges(start=as.vector(new.input$from), end=as.vector(new.input$to)),
   		strand=Rle("+"));
   	cv1=coverage(x1);
@@ -102,14 +114,14 @@ fragment.estimation<-function(output.dir, min.counts=0, seq.depth=NULL,  chr="ch
     if(homozygote)
         min.depth=seq.depth/2;
 	pred=subset(fread(pred.file, header=TRUE,sep="\t"), count > min.counts);
-	
+
     sub.sites1=subset(pred, chr.from != "insert" & chr.to == "insert");
       sub.sites2=subset(pred, chr.from == "insert");
-      
+
       from1.chr=as.vector(sub.sites1$chr.from);
       from1.pos=as.vector(sub.sites1$pos.to);
-      names(from1.chr)<-from1.pos    
-      
+      names(from1.chr)<-from1.pos
+
       dd1=as.vector(sub.sites1$direction)
       dd2=as.vector(sub.sites2$direction)
       p1=as.vector(sub.sites1$pos.to)
@@ -169,7 +181,7 @@ fragment.estimation<-function(output.dir, min.counts=0, seq.depth=NULL,  chr="ch
             }
           }
       }
-  
+
     win=200;
     step=20
     w1=seq(1, n.seq-win, by=step)
@@ -183,13 +195,13 @@ fragment.estimation<-function(output.dir, min.counts=0, seq.depth=NULL,  chr="ch
         mx[i,j]=length(intersect(cmb.from[i]:cmb.to[i], w1[j]:(w2[j]-1))) *cmb.dd[i]
       }
     }
-    
-    
+
+
     cvs=vector()
     for(j in 1:nn){
       cvs=append(cvs,  sum(as.vector(window(cv1[["insert"]], w1[j], w2[j]))));
     }
-    
+
     fit=nnls(t(mx),cvs/seq.depth);
     cof=fit$x
     uniq.lab1=unique(lab1)
@@ -242,9 +254,9 @@ fragment.estimation<-function(output.dir, min.counts=0, seq.depth=NULL,  chr="ch
     }
     df=data.frame(from=cmb.from, to=cmb.to, dd=cmb.dd, cof=fit$x)
      sub.df=df[have,]
-      
+
     labs=vector()
-    
+
     for(j in 1:nn){
       labs[j]=(w1[j]+w2[j])/2
     }
@@ -252,14 +264,15 @@ fragment.estimation<-function(output.dir, min.counts=0, seq.depth=NULL,  chr="ch
     pdf(paste(output.dir,"/plot_fragment.pdf",sep=""), width=10,height=14)
       par(mfrow=c(3,1))
       .plotCoverage(cv1,"insert")
-      
+
       lb=seq(0, n.seq, by=300);
-      axis(3, at=seq(0, n.seq, by=300),label=lb,cex.axis=0.6)
+
       tt=mean(cvs)/mean(est.cvs)
       plot(labs, cvs/tt, col="red",type="l",xlab="transgene", ylab="Depth",lwd=4)
+      axis(3, at=seq(0, n.seq, by=300),labels=lb,cex.axis=0.6)
       lines(labs, est.cvs,col="blue",lty=3,lwd=4)
       legend("topleft",c("Sequencing depth","Predicted depth"), lwd=4,lty=c(1,3), col=c("red","blue"))
-      
+
       mm=length(have)
       loc=-1 * max(floor(mm/50),1);
       input=data.frame(from=cmb.from[have], to=cmb.to[have])
@@ -267,7 +280,7 @@ fragment.estimation<-function(output.dir, min.counts=0, seq.depth=NULL,  chr="ch
       ann.chr1=from1.chr[as.character(input$from)]
       ann.chr2=from1.chr[as.character(input$to)]
       plot(c(1, n.seq), c(1, -2*length(have)+loc), type="n",xaxt="n",yaxt="n",ylab="Fragments",xlab="",axes = 0);
-      axis(3, at=seq(0, n.seq, by=300),label=seq(0, n.seq, by=300),cex.axis=0.6)
+      axis(3, at=seq(0, n.seq, by=300),labels=seq(0, n.seq, by=300),cex.axis=0.6)
       for(i in 1:mm){
         rect(input[i,1],-2*i+1,input[i,2],-2*i+0.5, border="green")
         if(!is.na(ann.chr1[i])){
@@ -277,12 +290,12 @@ fragment.estimation<-function(output.dir, min.counts=0, seq.depth=NULL,  chr="ch
           text(input[i,2]+30, -2*i+1, ann.chr1[i], cex=0.6)
         }
       }
-  
+
   dev.off()
-  
-}    
-   
-	
+
+}
+
+
 .plotCoverage <-function(x, chrom, start=1, end=length(x[[chrom]]), col="blue", xlab="Index", ylab="Coverage"){
 	xWindow <- as.vector(window(x[[chrom]], start, end))
 	x <- start:end
