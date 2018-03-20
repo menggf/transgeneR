@@ -1,4 +1,18 @@
 #' Predict fragment usage
+#'
+#' Predict fragment usage
+#'
+#' @param output.dir a directory for all the output. It is better to be a empty or non-existing directory;
+#' @param min.counts the minimum couts cutoff
+#' @param seq.depth the sequencing depth
+#' @param chr the chromosome to estimate the sequencing depth
+#' @param homozygote homozygote or heterozygote?
+#' @param plot.width plot width, equal to "width" in pdf()
+#' @param plot.height plot height, equal to "height" in pdf()
+#'
+#' @author Guofeng Meng
+#' @references To be updated later
+#'
 #' @import BiocParallel
 #' @import BH
 #' @import Rcpp
@@ -15,7 +29,18 @@
 #' @importFrom ShortRead readFastq srduplicated writeFastq
 #' @importFrom plyr ldply
 #'
-.fragment.estimation<-function(output.dir, seq.depth=NULL, chr="chr1", homozygote= FALSE, plot.width=10, plot.height=7){
+#'
+#' @return a plot in pdf file: plot_fragment.pdf
+#'
+#' @examples
+#' test.data=system.file("extdata", "test.zip", package = "transgeneR")
+#' temp <- tempdir()
+#' unzip(test.data, exdir=temp)
+#' output.dir=paste(temp,"/test",sep="")
+#' fragment.estimation(output.dir)
+#' @export
+
+fragment.estimation<-function(output.dir, min.counts=0, seq.depth=NULL,  chr="chr1", homozygote= FALSE, plot.width=10, plot.height=7){
 	if(is.null(seq.depth)){
 		chr.file=paste(output.dir,"/temp_files/read_nonsplit_", chr,".txt",sep="");
 		leftchr=fread(chr.file,sep="\t", showProgress=FALSE);
@@ -33,6 +58,10 @@
 		print(paste("Estimated sequence depth is:",round(seq.depth, digits=1) ,sep=" "))
 		leftchr1=1;leftchr=1;x=1;chrwin=1;
 	}
+	
+	insert.file=paste(output.dir,"/temp_files/insert.fa",sep="");
+    sq=read.fasta(insert.file, as.string = TRUE, forceDNAtolower = FALSE, seqonly = TRUE)[[1]];
+    n.seq=nchar(sq)
 	#left.file=paste(output.dir,"/temp_files/read_left_insert.txt",sep="");
 	range.file=paste(output.dir,"/temp_files/range_split.txt",sep="");
 	both.file=paste(output.dir,"/temp_files/read_both.txt",sep="");
@@ -56,89 +85,204 @@
 	names(temp2)<-c("chr","from","to")
 	names(temp3)<-c("chr","from","to")
 	names(temp4)<-c("chr","from","to")
-
-
+          
 	tmp1=rang[,c("chr1","from1","to1")]
 	tmp2=rang[,c("chr2","from2","to2")];
 	names(tmp1)<-c("chr","from","to")
 	names(tmp2)<-c("chr","from","to")
 	input=unique(rbind( nonsplit[,c("chr","from","to")], temp1,temp2,temp3,temp4,temp,tmp1,tmp2))
 	rm(temp1, temp2, temp3, temp4, tmp1, tmp2, both, split, nonsplit );
+	new.input=input[input$to > input$from & input$chr=="insert",]
+	x1=GRanges(seqnames=Rle("insert"), 
+  		ranges = IRanges(start=as.vector(new.input$from), end=as.vector(new.input$to)),
+  		strand=Rle("+"));
+  	cv1=coverage(x1);
 	pred.file=paste(output.dir,"/report.txt",sep="");
-  min.depth=seq.depth/4;
-  if(homozygote)
-    min.depth=seq.depth/2;
-	pred=fread(pred.file, header=TRUE,sep="\t");
-
-	locs=c(as.vector(as.matrix(subset(pred[,c("chr.from", "pos.from")],
-									chr.from=="insert","pos.from"))),
-									as.vector(as.matrix(subset(pred[,c("chr.to", "pos.to")],
-									chr.to=="insert","pos.to"))))
-
-	bk=sort(clustercpp(c(50, locs))$center)
-	n=length(bk)
-	ip=vector();
-	for(i in seq_len(n-1)){
-		x=GRanges(seqnames=Rle("insert"),
-			 			ranges = IRanges(start=bk[i], end=bk[i+1]),
-			 			strand=Rle("+"))
-		ip[i]=sum(coverage(x))
-	}
-
-	input=input[!is.na(input$from),]
-	tag=as.vector(input$to)-as.vector(input$from) > 0
-	input=input[tag,]
-	gr=GRanges(seqnames=Rle(as.vector(input$chr)),
-			 ranges = IRanges(start=as.vector(input$from), end=as.vector(input$to)),
-			 strand=Rle(rep("+",dim(input)[1])))
-	cv=coverage(gr)
-	xwin <- sapply(1:(n-1), function(x) sum(window(cv[["insert"]], bk[x], bk[x+1])))
-	p=n;
-	q=n*(n-1)/2
-	mx=matrix(0,ncol=n-1, nrow=q)
-	z=1;
-	rd1=vector()
-	rd2=vector();
-	for(i in 1:(n-1)){
-		for(j in i:(n-1)){
-			for(x in i:j){
-				mx[z,x]=1
-			}
-			rd1[z]=bk[i];
-			rd2[z]=bk[j+1];
-			z=z+1;
-		}
-	}
-	cc= 2 * xwin/(seq.depth*ip)
-  if(homozygote)
-     cc = xwin/(seq.depth*ip)
-	fit=nnls(t(mx),cc)
-	x=round(fit$x)
-	ww=which(x>0);
-	sm=rep(0,n-1)
-	for(i in 1:q){
-		sm=sm+x[i]*t(mx)[,i]
-	}
-	rr=cor(sm,cc)
-	print(paste("Consistency of predicted transgenic fragment:", round(rr,digits=3),sep=" "))
-	plot.file=paste(output.dir,"/plot_fragment.pdf",sep="");
-	pdf(plot.file,width=plot.width, height=plot.height)
-	par(mfrow=c(2,1),mar=c(3,4,4,2)+0.1)
-	plot(c(1,length(cv[["insert"]])), c(1,sum(x)+2),type="n",xlab="",ylab="transgenic Fragments",yaxt="n",main="Transgene Sequence" )
-	tt=2;
-	random.col=rainbow(length(ww))
-	for(p in 1:length(ww)){
-		for(i in 1:x[ww[p]]){
-			lines(c(rd1[ww[p]],rd2[ww[p]]), c(tt,tt), lwd=2,col=random.col[p])
-			tt=tt+1
-		}
-	}
-	#par(mar=c(2,4,2,2)+0.1)
-	#draw.bg()
-	par(mar=c(5,4,2,2)+0.1)
-	.plotCoverage(cv,"insert")
-	dev.off();
-}
+    min.depth=seq.depth/4;
+    if(homozygote)
+        min.depth=seq.depth/2;
+	pred=subset(fread(pred.file, header=TRUE,sep="\t"), count > min.counts);
+	
+    sub.sites1=subset(pred, chr.from != "insert" & chr.to == "insert");
+      sub.sites2=subset(pred, chr.from == "insert");
+      
+      from1.chr=as.vector(sub.sites1$chr.from);
+      from1.pos=as.vector(sub.sites1$pos.to);
+      names(from1.chr)<-from1.pos    
+      
+      dd1=as.vector(sub.sites1$direction)
+      dd2=as.vector(sub.sites2$direction)
+      p1=as.vector(sub.sites1$pos.to)
+      p3=as.vector(sub.sites2$pos.from)
+      p4=as.vector(sub.sites2$pos.to)
+      from1=vector();
+      to1=vector();
+      for(i in seq_along(dd1)){
+         if(dd1[i]=="ff" | dd1[i]=="rf")
+           from1=append(from1, p1[i]);
+         if(dd1[i]=="rr" | dd1[i]=="fr")
+           to1=append(to1, p1[i]);
+      }
+      from1=sort(unique(from1));
+      to1=sort(unique(to1));
+      from2=vector();
+      to2=vector();
+      for(i in seq_along(dd2)){
+         if(dd2[i]=="ff" ){
+           from2=append(from2, p4[i]);
+           to2=append(to2, p3[i]);
+         }
+         if(dd2[i]=="rr" ){
+           from2=append(from2, p3[i]);
+           to2=append(to2, p4[i]);
+         }
+         if( dd2[i]=="fr"){
+           to2=append(to2, p3[i]);
+           to2=append(to2, p4[i]);
+         }
+         if( dd2[i]=="rf"){
+           from2=append(from2, p3[i]);
+           from2=append(from2, p4[i]);
+         }
+      }
+      from2=sort(from2)
+      to2=sort(to2)
+      from=sort(c(from1, from2))
+      to=sort(c(to1, to2))
+      cmb.from=vector();
+      cmb.to=vector();
+      cmb.dd=vector()
+      lab1=vector()
+      lab2=vector()
+      lab =vector()
+      ann=matrix(0, ncol=length(to),nrow=length(from))
+      for(i in seq_along(from)){
+          for(j in seq_along(to)){
+            if(from[i] < to[j]){
+              cmb.from=append(cmb.from, from[i])
+              cmb.to=append(cmb.to, to[j])
+              cmb.dd=append(cmb.dd, 1)
+              lab1=append(lab1, i)
+              lab2=append(lab2, j)
+              lab=append(lab, paste(i,"/",j,sep=""))
+              ann[i,j]=1
+            }
+          }
+      }
+  
+    win=200;
+    step=20
+    w1=seq(1, n.seq-win, by=step)
+    w2=w1+win
+    mm=length(cmb.from)
+    nn=length(w1)
+    mx=matrix(nrow=mm, ncol=nn);
+    label=vector();
+    for(i in 1:mm){
+      for(j in 1:nn){
+        mx[i,j]=length(intersect(cmb.from[i]:cmb.to[i], w1[j]:(w2[j]-1))) *cmb.dd[i]
+      }
+    }
+    
+    
+    cvs=vector()
+    for(j in 1:nn){
+      cvs=append(cvs,  sum(as.vector(window(cv1[["insert"]], w1[j], w2[j]))));
+    }
+    
+    fit=nnls(t(mx),cvs/seq.depth);
+    cof=fit$x
+    uniq.lab1=unique(lab1)
+    have=vector()
+    used=vector();
+    for(x in uniq.lab1){
+        wh=lab1==x
+        test=cof;
+        test[!wh]=0;
+        max.cof=which.max(test);
+        if(cof[max.cof] > 0.1){
+          have=append(have,max.cof);
+          used=append(used, x)
+        }
+    }
+    mx2=matrix(nrow=length(have), ncol=nn);
+    for(i in 1:length(have) ){
+      for(j in 1:nn){
+        mx2[i,j]=length(intersect(cmb.from[have[i]]:cmb.to[have[i]], w1[j]:(w2[j]-1))) *cmb.dd[have[i]]
+      }
+    }
+    est.cvs=colSums(mx2);
+    myr=cor(est.cvs, cvs)
+    left=uniq.lab1[!uniq.lab1 %in% used];
+    final.rr=myr
+    while(length(left) >0){
+      which.left=which(lab1%in%left);
+      rr=sapply(which.left, function(y){
+        ad=sapply(1:nn, function(z) length(intersect(cmb.from[y]:cmb.to[y], w1[z]:(w2[z]-1))) *cmb.dd[y])
+        cor(cvs, ad + est.cvs)
+      })
+      wh.rr=which.max(rr);
+      if(rr[wh.rr] < final.rr){
+        break;
+      }
+      have=append(have, which.left[wh.rr])
+      left=left[left!=lab1[which.left[wh.rr]]]
+      final.rr=rr[wh.rr]
+      #print(final.rr)
+      mx3=matrix(nrow=length(have), ncol=nn);
+      label=vector();
+      for(i in 1:length(have)){
+        for(j in 1:nn){
+          mx3[i,j]=length(intersect(cmb.from[have[i]]:cmb.to[have[i]], w1[j]:(w2[j]-1))) *cmb.dd[have[i]]
+        }
+      }
+      est.cvs=colSums(mx3);
+      myr2=cor(est.cvs, cvs)
+      #print(myr2)
+    }
+    df=data.frame(from=cmb.from, to=cmb.to, dd=cmb.dd, cof=fit$x)
+     sub.df=df[have,]
+      
+    labs=vector()
+    
+    for(j in 1:nn){
+      labs[j]=(w1[j]+w2[j])/2
+    }
+    est.cvs=colSums(mx3);
+    pdf(paste(output.dir,"/plot_fragment.pdf",sep=""), width=10,height=14)
+      par(mfrow=c(3,1))
+      .plotCoverage(cv1,"insert")
+      
+      lb=seq(0, n.seq, by=300);
+      axis(3, at=seq(0, n.seq, by=300),label=lb,cex.axis=0.6)
+      tt=mean(cvs)/mean(est.cvs)
+      plot(labs, cvs/tt, col="red",type="l",xlab="transgene", ylab="Depth",lwd=4)
+      lines(labs, est.cvs,col="blue",lty=3,lwd=4)
+      legend("topleft",c("Sequencing depth","Predicted depth"), lwd=4,lty=c(1,3), col=c("red","blue"))
+      
+      mm=length(have)
+      loc=-1 * max(floor(mm/50),1);
+      input=data.frame(from=cmb.from[have], to=cmb.to[have])
+      input=input[order(input$from),]
+      ann.chr1=from1.chr[as.character(input$from)]
+      ann.chr2=from1.chr[as.character(input$to)]
+      plot(c(1, n.seq), c(1, -2*length(have)+loc), type="n",xaxt="n",yaxt="n",ylab="Fragments",xlab="",axes = 0);
+      axis(3, at=seq(0, n.seq, by=300),label=seq(0, n.seq, by=300),cex.axis=0.6)
+      for(i in 1:mm){
+        rect(input[i,1],-2*i+1,input[i,2],-2*i+0.5, border="green")
+        if(!is.na(ann.chr1[i])){
+          text(input[i,1]-30, -2*i+1, ann.chr1[i], cex=0.6)
+        }
+        if(!is.na(ann.chr2[i])){
+          text(input[i,2]+30, -2*i+1, ann.chr1[i], cex=0.6)
+        }
+      }
+  
+  dev.off()
+  
+}    
+   
+	
 .plotCoverage <-function(x, chrom, start=1, end=length(x[[chrom]]), col="blue", xlab="Index", ylab="Coverage"){
 	xWindow <- as.vector(window(x[[chrom]], start, end))
 	x <- start:end
@@ -166,22 +310,4 @@
 	return(list(cl=cl, center=center))
 }
 
-
-#draw.bg=function(){
-#	fr=c(42,27,27,27,1,27,10,10010,1,27, 1950, 20,42,4, 20, 20, 20)
-#	to=c(10217,10217,6228,4328,10217,7664,10010,10217,10109,9010,10217,9976,10217,10217, 3691, 3691, 3691)
-#	dsf=data.frame(fr=fr, to=to);
-#	od=order(fr);
-#	fr=fr[od]
-#	to=to[od]
-#	gb=GRanges(seqnames=Rle("insert"),
-#			 ranges = IRanges(start=fr, end=to),
-#			 strand=Rle(rep("+",length(fr))))
-#	cb=coverage(gb)
-#	dd=as.vector(window(cb[["insert"]], 1, length(cb[["insert"]])))
-#	plot(c(1,length(cv[["insert"]])), c(1,length(fr)+2),type="n",xlab="",ylab="transgenes Fragments",yaxt="n",main="" )
-#	for(i in 1:length(fr)){
-#		lines(c(fr[i],to[i]), c(i+1,i+1), lwd=2,col="green")
-#	}
-#}
 

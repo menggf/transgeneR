@@ -232,7 +232,7 @@ transgene.discovery<-function(output.dir, genome.ref, homozygote= FALSE, mate1=N
         #cmd2=paste("bowtie2 -x", insert.ref, "--quiet --local -f -p", cores, "-U", temp.fragment, "-S", temp.align.insert ,sep=" ");
         cmd1=paste("bowtie2 -x", genome.ref, "--quiet --local -f -U", temp.fragment, "-S", temp.align.genome ,sep=" ");
         cmd2=paste("bowtie2 -x", insert.ref, "--quiet --local -f -U", temp.fragment, "-S", temp.align.insert ,sep=" ");
-    print("begin second-round assign reads...");
+        print("begin second-round assign reads...");
         system(cmd1)
         system(cmd2);
         reassignreads(output.dir, c(allow.gap, block.size, reads.dup.score))

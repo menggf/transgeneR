@@ -112,8 +112,8 @@
 	}, BPPARAM= MulticoreParam( workers= cores))
 	res[sapply(res, is.null)] <- NULL
 	dif <- ldply(res, data.frame)
-  if(nrow(dif) > 1)
-	dif=dif[order(dif$count, decreasing=T),]
+    if(nrow(dif) > 1)
+	    dif=dif[order(dif$count, decreasing=T),]
 	mm=dim(dif)[1];
 	sites=paste("site",1:mm, sep="")
 	output=cbind(sites,dif)
