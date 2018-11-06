@@ -6,6 +6,12 @@ library(devtools)
 
 install_github("menggf/transgeneR")
 
+## prerequisite
+
+TransgeneR uses bowtie2 as the alignment tool. Therefore, before usage, bowtie2 must have been installed
+in the linux mechine and its location has been add to $PATH variable. Meanwhile, the genome reference
+index has been construct using bowtie2-build command.
+
 ## usage
 test.data=system.file("extdata", "test.zip", package = "transgeneR")
 
