@@ -40,7 +40,9 @@
 #' fragment.estimation(output.dir, chr="chr1")
 #' @export
 
-fragment.estimation<-function(output.dir, min.counts=0, seq.depth=NULL,  chr="chr1", homozygote= FALSE, plot.width=10, plot.height=7){
+fragment.estimation<-function(output.dir, min.counts=2, seq.depth=NULL,  chr="chr1", homozygote= FALSE, plot.width=10, plot.height=7){
+	print("Please note that: please reconsider the min.counts setting or ")
+	print("edit output.dir/report.txt to remove the false prediction")
 	if(is.null(seq.depth)){
 		chr.file=paste(output.dir,"/temp_files/read_nonsplit_", chr,".txt",sep="");
 		if(!file.exists(chr.file)){
