@@ -25,6 +25,11 @@ transgene.sq=paste(temp,"/test/temp_files/insert.fa",sep="")
 
 transgeneR(output.dir,  insert.seq=transgene.sq)
 
+#If WGS is used and the sequencing depth is > 30, you can do copy number estimation using "fragment.estimation".
+
+fragment.estimation(output.dir, min.counts=3)
+
+
 ## Q & A
   1. error: /usr/bin/ld: cannot find -lboost_iostreams
 
