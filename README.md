@@ -13,6 +13,8 @@ in the linux mechine and its location has been added to $PATH variable. Meanwhil
 index has been constructed using "bowtie2-build" command.
 
 ## usage
+#The whole analysis can be done using transgeneR function.
+
     test.data=system.file("extdata", "test.zip", package = "transgeneR")
     
     temp <- tempdir()
@@ -26,6 +28,7 @@ index has been constructed using "bowtie2-build" command.
     transgeneR(output.dir,  insert.seq=transgene.sq)
 
 #If WGS is used and the sequencing depth is > 30, you can do copy number estimation using "fragment.estimation".
+
     ?fragment.estimation
     fragment.estimation(output.dir, min.counts=3)
 
