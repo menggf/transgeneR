@@ -12,7 +12,7 @@
 #' @param calculate.nonsplit.reads to estimate number of nonsplit reads crossing the integration or rearrangement sites
 #' @param seq.depth the sequencing depth of the whole genome sequencing data. It is used to estimated copy number of transgenic sequences. This option is used only when estimate.copy is TRUE
 #' @param backgroud.chrom the chromosome used to estimate the sequencing information, e.g. coverage and copy number
-#' @param remove.duplicate to remove the duplicated reads or not. Recommend to set it TURE if PCR-based sequencing data are used
+#' @param remove.duplicate to remove the duplicated reads or not. Recommend to set it TRUE if PCR-based sequencing data are used
 #' @param min.clip the minimum clip size for reads split
 #' @param max.tail the maximum tail unmapped length
 #' @param min.split.reads the minimum number of reads for a validated integration site
