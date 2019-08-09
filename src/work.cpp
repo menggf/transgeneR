@@ -810,7 +810,7 @@ void assigns(string dir,  string keep_chr, int min_frac, int cores=1, int strict
 	fstream fout7((string(dir)+"/temp_files/temp_seq.txt").c_str(),fstream::out);
 	fstream fout8((string(dir)+"/temp_files/range_split.txt").c_str(),fstream::out);
 	fout8<<"tag\tid\tchr1\tfrom1\tto1\tchr2\tfrom2\tto2\n";
-	fstream fout9((string(dir)+"/warings.txt").c_str(),fstream::out);
+	fstream fout9((string(dir)+"/warnings.txt").c_str(),fstream::out);
 	fstream fout10((string(dir)+"/temp_files/read_both.txt").c_str(),fstream::out);
 	fout10<<"tag\tid\tchr1\tfrom\tto\n";
 	fstream fout11((string(dir)+"/mapping_summary.txt").c_str(),fstream::out);
