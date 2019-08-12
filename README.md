@@ -39,3 +39,7 @@ index has been constructed using "bowtie2-build" command.
       Please install boost library in your system using the command like:
       
       yum install boost-devel
+      
+ 2. Who to contact for any issues？
+
+     Please send email to menggf@gmail.com
