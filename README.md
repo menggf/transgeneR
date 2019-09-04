@@ -44,5 +44,6 @@ index has been constructed using "bowtie2-build" command.
 
      Please send email to menggf@gmail.com
  3. How to cite?
+ 
     https://www.biorxiv.org/content/10.1101/462267v1
     
