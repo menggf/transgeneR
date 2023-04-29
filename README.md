@@ -1,5 +1,5 @@
 # transgeneR
-This a a package designed for trangenic integration and rearrangement sites discovery using sequencing data
+This is a package designed for trangenic integration and rearrangement sites discovery using sequencing data
 
 ## Install TransgeneR
 library(devtools)
